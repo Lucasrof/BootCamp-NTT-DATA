@@ -1,3 +1,110 @@
+import textwrap
+from abc import ABC, abstractclassmethod, abstractproperty
+from datetime import datetime 
+
+class ContasIterador:
+    def __init__(self, contas):
+        self.contas = contas
+        self._index = 0
+
+        def __iter__(self):
+            return self
+        
+        def __next__(self):
+            try:
+                conta = self.contas[self._index]
+                return f"""\
+                Agência:\t{conta.agencia}
+                Número:\t\t{conta.numero}
+                Titular:\t{conta.cliente.nome}
+                Saldo:\t\tR$ {conta.saldo:.2f}
+            """
+            except IndexError:
+                raise StopIteration
+            finally:
+                self._index += 1
+
+class Cliente:
+    def __init__(self, endereco):
+        self.endereco = endereco
+        self.contas = []
+        self.indice_conta = 0
+
+    def executar_transacao(self, conta, transacao):
+        if len(conta.historico.transcoes_dia()) >= 2:
+            print("\n@@@ Transação não permitida! Você excedeu o limite diário de transações! @@@")
+            return
+        transacao.registrar(conta)
+
+    def adicionar_conta(self, conta):
+        self.contas.append(conta)    
+
+class Pessoa_Fisica(Cliente):
+    def __init__(self, nome, data_nascimento, cpf, endereco):
+        super().__init__(endereco)
+        self.nome = nome
+        self.data_nascimento = data_nascimento
+        self.cpf = cpf
+
+class Conta:
+    def __init__ (self, numero, cliente):
+        self.saldo = 0
+        self._numero = numero
+        self._agencia = "0001"
+        self._cliente = cliente
+        self._historico = Historico()
+    
+    @classmethod
+    def nova_conta(cls, cliente, numero):
+        return cls(numero, cliente)
+    @property
+    def saldo(self):
+        return self._saldo
+    @property
+    def numero(self):
+        return self._numero
+    @property
+    def agencia(self):
+        return self._agencia
+    @property
+    def cliente(self):
+        return self._cliente
+    @property
+    def historico(self):
+        return self._historico
+    
+    def sacar(self, valor):
+        saldo = self.saldo
+        excedeu_saldo = valor > saldo
+
+        if excedeu_saldo:
+            print ("\n@@@ Operação inválida! Você não possui saldo suficiente. @@@")
+        elif valor > 0:
+            self._saldo -= valor
+            print ("\n=== Saque realizado com sucesso! ===")
+            return True
+        else:
+            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
+        
+        return False
+    
+    def depositar(self, valor):
+        if valor > 0:
+            self._saldo += valor
+            print("\n=== Depósito realizado com sucesso! ===")
+        else:
+            print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
+            return False
+        return True
+
+
+
+
+
+
+
+
+
 menu = """
 [1] Depositar
 [2] Sacar
@@ -10,6 +117,22 @@ limite = 500
 extrato = ""
 numero_saques = 0
 LIMITE_SAQUES = 3
+
+
+def log_transacao(func):
+    def envelope(*args,**kwargs):
+        resultado = func(*args, **kwargs)
+        print(f"{datetime.now()}: {func.__name__.upper()}")
+        return resultado
+    return envelope
+
+
+@log_transacao
+def depositar(clientes)
+    
+
+
+
 
 while True:
     
